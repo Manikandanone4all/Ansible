@@ -1,0 +1,29 @@
+---
+
+- hosts: localhost
+  become: yes
+  
+  tasks:
+    - name: Gather the package facts
+      package_facts:
+        manager: auto
+
+    - name: Print the package facts
+      debug:
+        vars: ansible_facts.packages
+
+    - name: Check whether a package called httpd
+      debug:
+        msg: "{{ ansible_facts.packages[httpd] | length }} version of httpd already installed!"
+      when: "'httpd' in ansible_facts.packages"
+
+    - name: Check whether httpd path is exists
+      stat:
+        path: /etc/httpd/conf/httpd.conf
+      register: __httpd_installed
+
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: latest
+      when: not __httpd_installed.stat.exits
